@@ -1,0 +1,32 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "pt-BR": {
+          "summary": "Encontre restaurantes próximos e faça pedidos usando a Alexa.",
+          "examplePhrases": [
+            "Alexa, abra aqui perto",
+            "Alexa, peça para aqui perto buscar pizzarias",
+            "Alexa, peça para aqui perto procurar restaurantes próximos"
+          ],
+          "name": "Aqui Perto",
+          "description": "A skill Aqui Perto permite encontrar restaurantes, consultar cardápios e iniciar pedidos por voz."
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "Diga: Alexa, abra aqui perto.",
+      "category": "DELIVERY_AND_TAKEOUT",
+      "distributionCountries": [
+        "BR"
+      ]
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:645804193111:function:ask-aquiperto-default-default-1784391865227"
+        }
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "model": "marketplace.restaurant",
+    "pk": 1,
+    "fields": {
+      "name": "Bella Pizza",
+      "category": "pizzaria",
+      "city": "Jundiaí",
+      "neighborhood": "Centro",
+      "address": "Rua de Exemplo, 100 - Centro",
+      "phone": "(11) 4000-1000",
+      "registered": true,
+      "active": true,
+      "distance_km": "0.90",
+      "notes": "Parceira de teste; recebe pedidos pelo portal."
+    }
+  },
+  {
+    "model": "marketplace.restaurant",
+    "pk": 2,
+    "fields": {
+      "name": "Forno da Vila",
+      "category": "pizzaria",
+      "city": "Jundiaí",
+      "neighborhood": "Vila Arens",
+      "address": "Avenida de Exemplo, 250 - Vila Arens",
+      "phone": "(11) 4000-2000",
+      "registered": false,
+      "active": true,
+      "distance_km": "1.30",
+      "notes": "Não cadastrada; cada escolha cria ou atualiza um lead comercial."
+    }
+  },
+  {
+    "model": "marketplace.menuitem",
+    "pk": 1,
+    "fields": {
+      "restaurant": 1,
+      "name": "Pizza de calabresa grande",
+      "description": "Calabresa, cebola, muçarela e molho de tomate",
+      "price": "59.90",
+      "active": true
+    }
+  },
+  {
+    "model": "marketplace.menuitem",
+    "pk": 2,
+    "fields": {
+      "restaurant": 1,
+      "name": "Pizza de quatro queijos grande",
+      "description": "Muçarela, provolone, parmesão e catupiry",
+      "price": "64.90",
+      "active": true
+    }
+  },
+  {
+    "model": "marketplace.menuitem",
+    "pk": 3,
+    "fields": {
+      "restaurant": 1,
+      "name": "Refrigerante de dois litros",
+      "description": "Refrigerante gelado",
+      "price": "14.00",
+      "active": true
+    }
+  }
+]

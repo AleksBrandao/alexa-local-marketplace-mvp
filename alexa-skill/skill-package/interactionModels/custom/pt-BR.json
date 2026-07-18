@@ -1,0 +1,184 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "aqui perto",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "name": "BuscarPizzariasIntent",
+          "slots": [],
+          "samples": [
+            "buscar pizzarias",
+            "procurar pizzarias",
+            "encontrar pizzarias",
+            "mostrar pizzarias",
+            "quero pedir pizza",
+            "quero uma pizza",
+            "buscar restaurantes",
+            "procurar restaurantes próximos",
+            "mostrar restaurantes próximos"
+          ]
+        },
+        {
+          "name": "SelecionarRestauranteIntent",
+          "slots": [
+            {
+              "name": "restaurante",
+              "type": "RESTAURANTE"
+            }
+          ],
+          "samples": [
+            "{restaurante}",
+            "quero a {restaurante}",
+            "escolho a {restaurante}",
+            "selecionar {restaurante}",
+            "vou de {restaurante}",
+            "quero pedir na {restaurante}",
+            "mostrar o cardápio da {restaurante}"
+          ]
+        },
+        {
+          "name": "SelecionarItemIntent",
+          "slots": [
+            {
+              "name": "item",
+              "type": "ITEM_CARDAPIO"
+            }
+          ],
+          "samples": [
+            "{item}",
+            "quero {item}",
+            "quero uma {item}",
+            "escolho {item}",
+            "adicionar {item}",
+            "pedir {item}",
+            "vou querer {item}",
+            "quero pedir {item}"
+          ]
+        },
+        {
+          "name": "InformarQuantidadeIntent",
+          "slots": [
+            {
+              "name": "quantidade",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "{quantidade}",
+            "quero {quantidade}",
+            "{quantidade} unidades",
+            "vou querer {quantidade}",
+            "adicionar {quantidade}",
+            "a quantidade é {quantidade}"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "RESTAURANTE",
+          "values": [
+            {
+              "id": "1",
+              "name": {
+                "value": "Bella Pizza",
+                "synonyms": [
+                  "Bella",
+                  "Bela",
+                  "Bela Pizza",
+                  "Pizza Bella",
+                  "Pizza Bela",
+                  "Pizzaria Bella",
+                  "Pizzaria Bela"
+                ]
+              }
+            },
+            {
+              "id": "2",
+              "name": {
+                "value": "Forno da Vila",
+                "synonyms": [
+                  "Forno",
+                  "Forno Vila",
+                  "Pizzaria Forno",
+                  "Pizzaria Forno da Vila"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ITEM_CARDAPIO",
+          "values": [
+            {
+              "id": "1",
+              "name": {
+                "value": "Pizza de calabresa grande",
+                "synonyms": [
+                  "pizza de calabresa",
+                  "calabresa",
+                  "calabresa grande",
+                  "pizza calabresa",
+                  "uma calabresa"
+                ]
+              }
+            },
+            {
+              "id": "2",
+              "name": {
+                "value": "Pizza de quatro queijos grande",
+                "synonyms": [
+                  "pizza de quatro queijos",
+                  "quatro queijos",
+                  "quatro queijos grande",
+                  "pizza quatro queijos",
+                  "uma quatro queijos"
+                ]
+              }
+            },
+            {
+              "id": "3",
+              "name": {
+                "value": "Refrigerante de dois litros",
+                "synonyms": [
+                  "refrigerante",
+                  "refrigerante de dois litros",
+                  "refri",
+                  "bebida",
+                  "um refrigerante"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
