@@ -5,8 +5,11 @@ services:
     region: virginia
     plan: free
     rootDir: backend
+
     buildCommand: ./build.sh
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    initialDeployHook: python manage.py loaddata initial_catalog
+
     healthCheckPath: /api/
     autoDeployTrigger: commit
 
