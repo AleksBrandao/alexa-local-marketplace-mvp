@@ -3,7 +3,7 @@ const https = require('https');
 
 const API_BASE_URL =
   process.env.API_BASE_URL ||
-  'https://b4b0-177-196-114-213.ngrok-free.app';
+  'https://aqui-perto-api.onrender.com';
 
 function requestJson(method, url, payload = null) {
   return new Promise((resolve, reject) => {
@@ -71,7 +71,7 @@ function requestJson(method, url, payload = null) {
       }
     );
 
-    request.setTimeout(8000, () => {
+    request.setTimeout(6000, () => {
       request.destroy(
         new Error(
           'Tempo limite excedido ao consultar o servidor Django.'
