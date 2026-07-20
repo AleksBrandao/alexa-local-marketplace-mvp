@@ -44,3 +44,6 @@ Thumbs.db
 
 # Backups
 alexa-skill-backup-*/
+
+# Cache do TypeScript
+*.tsbuildinfo
