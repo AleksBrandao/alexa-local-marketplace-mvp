@@ -39,8 +39,6 @@
             "procurar pizzarias",
             "encontrar pizzarias",
             "mostrar pizzarias",
-            "quero pedir pizza",
-            "quero uma pizza",
             "buscar restaurantes",
             "procurar restaurantes próximos",
             "mostrar restaurantes próximos"
@@ -74,13 +72,10 @@
           ],
           "samples": [
             "{item}",
-            "quero {item}",
-            "quero uma {item}",
             "escolho {item}",
             "adicionar {item}",
-            "pedir {item}",
-            "vou querer {item}",
-            "quero pedir {item}"
+            "selecionar {item}",
+            "pedir o item {item}"
           ]
         },
         {
@@ -98,6 +93,24 @@
             "vou querer {quantidade}",
             "adicionar {quantidade}",
             "a quantidade é {quantidade}"
+          ]
+        },
+
+        {
+          "name": "PedidoCompletoIntent",
+          "slots": [
+            {
+              "name": "pedido",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "quero pedir {pedido}",
+            "faça um pedido de {pedido}",
+            "meu pedido é {pedido}",
+            "anote {pedido}",
+            "desejo {pedido}",
+            "vou pedir {pedido}"
           ]
         }
       ],
