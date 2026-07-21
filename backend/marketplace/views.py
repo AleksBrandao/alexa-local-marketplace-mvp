@@ -10,6 +10,7 @@ from .serializers import (
     OrderSerializer,
     RestaurantSerializer,
 )
+from .services.order_parser import parse_order_text
 
 
 class RestaurantViewSet(viewsets.ModelViewSet):
@@ -51,24 +52,78 @@ class MerchantLeadViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.select_related('restaurant').prefetch_related('items').all()
+    queryset = (
+        Order.objects
+        .select_related('restaurant')
+        .prefetch_related('items')
+        .all()
+    )
     serializer_class = OrderSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        restaurant_id = self.request.query_params.get('restaurant')
-        status_value = self.request.query_params.get('status')
+
+        restaurant_id = self.request.query_params.get(
+            'restaurant'
+        )
+        status_value = self.request.query_params.get(
+            'status'
+        )
+
         if restaurant_id:
-            queryset = queryset.filter(restaurant_id=restaurant_id)
+            queryset = queryset.filter(
+                restaurant_id=restaurant_id
+            )
+
         if status_value:
-            queryset = queryset.filter(status=status_value)
+            queryset = queryset.filter(
+                status=status_value
+            )
+
         return queryset
 
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='parse',
+    )
+    def parse_order(self, request):
+        text = str(
+            request.data.get('text', '')
+        ).strip()
+
+        restaurant_id = request.data.get(
+            'restaurant_id'
+        )
+
+        if not text:
+            return Response(
+                {
+                    'detail':
+                        'O texto do pedido é obrigatório.'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = parse_order_text(
+            text=text,
+            restaurant_id=restaurant_id,
+        )
+
+        return Response(result)
+
     def create(self, request, *args, **kwargs):
-        serializer = OrderCreateSerializer(data=request.data)
+        serializer = OrderCreateSerializer(
+            data=request.data
+        )
         serializer.is_valid(raise_exception=True)
+
         order = serializer.save()
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+        return Response(
+            OrderSerializer(order).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 @api_view(['GET'])

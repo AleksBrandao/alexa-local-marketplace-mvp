@@ -1,4 +1,5 @@
 const Alexa = require('ask-sdk-core');
+const http = require('http');
 const https = require('https');
 
 const API_BASE_URL =
@@ -23,11 +24,16 @@ function requestJson(method, url, payload = null) {
         Buffer.byteLength(requestBody);
     }
 
-    const request = https.request(
+    const transport =
+    parsedUrl.protocol === 'http:' ? http : https;
+
+    const request = transport.request(
       {
         protocol: parsedUrl.protocol,
         hostname: parsedUrl.hostname,
-        port: parsedUrl.port || 443,
+        port:
+            parsedUrl.port ||
+            (parsedUrl.protocol === 'http:' ? 80 : 443),
         path: `${parsedUrl.pathname}${parsedUrl.search}`,
         method,
         headers
@@ -279,8 +285,7 @@ async function loadMenuItems(restaurantId) {
 
 async function createOrder({
   restaurantId,
-  menuItemId,
-  quantity
+  items
 }) {
   const url =
     `${API_BASE_URL.replace(/\/+$/, '')}/api/orders/`;
@@ -291,12 +296,10 @@ async function createOrder({
     customer_phone: '',
     delivery_address: '',
     source: 'alexa',
-    items: [
-      {
-        menu_item_id: Number(menuItemId),
-        quantity: Number(quantity)
-      }
-    ]
+    items: items.map((item) => ({
+      menu_item_id: Number(item.menuItemId),
+      quantity: Number(item.quantity)
+    }))
   };
 
   console.log(
@@ -306,6 +309,25 @@ async function createOrder({
 
   return postJson(url, payload);
 }
+
+async function parseCompleteOrder({
+  text,
+  restaurantId = null
+}) {
+  const url =
+    `${API_BASE_URL.replace(/\/+$/, '')}/api/orders/parse/`;
+
+  const payload = {
+    text
+  };
+
+  if (restaurantId) {
+    payload.restaurant_id = Number(restaurantId);
+  }
+
+  return postJson(url, payload);
+}
+
 
 function findRestaurant(restaurants, requestedName) {
   const requested = normalizeText(requestedName);
@@ -371,6 +393,97 @@ const LaunchRequestHandler = {
       )
       .reprompt('Você pode dizer: buscar pizzarias.')
       .getResponse();
+  }
+};
+
+const PedidoCompletoIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      Alexa.getRequestType(handlerInput.requestEnvelope) ===
+        'IntentRequest' &&
+      Alexa.getIntentName(handlerInput.requestEnvelope) ===
+        'PedidoCompletoIntent'
+    );
+  },
+
+  async handle(handlerInput) {
+    try {
+      const pedidoSlot = getResolvedSlot(
+        handlerInput.requestEnvelope,
+        'pedido'
+      );
+
+      const pedidoText =
+        pedidoSlot.raw || pedidoSlot.name;
+
+      if (!pedidoText) {
+        return handlerInput.responseBuilder
+          .speak(
+            'Não consegui ouvir o pedido. Diga, por exemplo: quero pedir uma pizza de calabresa e um refrigerante da Bella Pizza.'
+          )
+          .reprompt('Qual é o seu pedido?')
+          .getResponse();
+      }
+
+      const attributes =
+        handlerInput.attributesManager.getSessionAttributes();
+
+      const parsedOrder = await parseCompleteOrder({
+        text: pedidoText,
+        restaurantId:
+          attributes.selectedRestaurant?.id || null
+      });
+
+      if (parsedOrder.status !== 'ready') {
+        const message =
+          parsedOrder.message ||
+          'Não consegui identificar todos os dados do pedido.';
+
+        return handlerInput.responseBuilder
+          .speak(
+            `${message} Você pode repetir o pedido incluindo o restaurante, os itens e as quantidades.`
+          )
+          .reprompt('Qual é o pedido completo?')
+          .getResponse();
+      }
+
+      attributes.pendingOrder = parsedOrder;
+      attributes.conversationState =
+        'awaiting_confirmation';
+
+      handlerInput.attributesManager.setSessionAttributes(
+        attributes
+      );
+
+      const itemsText = parsedOrder.items
+        .map((item) => {
+          const quantity = Number(item.quantity);
+
+          return `${formatQuantityForSpeech(quantity)} de ${item.name}`;
+        })
+        .join(' e ');
+
+      return handlerInput.responseBuilder
+        .speak(
+          `Você pediu ${itemsText}, da ${parsedOrder.restaurant.name}. O total é ${formatPriceForSpeech(parsedOrder.total)}. Confirma o pedido?`
+        )
+        .reprompt(
+          'Diga sim para confirmar ou não para cancelar.'
+        )
+        .getResponse();
+    } catch (error) {
+      console.error(
+        'Erro ao interpretar pedido completo:',
+        error
+      );
+
+      return handlerInput.responseBuilder
+        .speak(
+          'Não consegui interpretar o pedido agora. O pedido não foi criado.'
+        )
+        .reprompt('Você pode repetir o pedido.')
+        .getResponse();
+    }
   }
 };
 
@@ -800,10 +913,7 @@ const YesIntentHandler = {
 
     if (
       attributes.conversationState !==
-        'awaiting_confirmation' ||
-      !attributes.selectedRestaurant ||
-      !attributes.selectedMenuItem ||
-      !attributes.quantity
+      'awaiting_confirmation'
     ) {
       return handlerInput.responseBuilder
         .speak(
@@ -813,13 +923,79 @@ const YesIntentHandler = {
         .getResponse();
     }
 
+    let restaurantId;
+    let restaurantName;
+    let items;
+    let expectedTotal;
+
+    /*
+     * Novo fluxo:
+     * pedido completo informado em uma frase.
+     */
+    if (attributes.pendingOrder) {
+      restaurantId =
+        attributes.pendingOrder.restaurant.id;
+
+      restaurantName =
+        attributes.pendingOrder.restaurant.name;
+
+      expectedTotal =
+        attributes.pendingOrder.total;
+
+      items = attributes.pendingOrder.items.map(
+        (item) => ({
+          menuItemId: item.menu_item_id,
+          quantity: item.quantity
+        })
+      );
+    }
+
+    /*
+     * Fluxo antigo:
+     * restaurante, item e quantidade informados
+     * em etapas separadas.
+     */
+    else if (
+      attributes.selectedRestaurant &&
+      attributes.selectedMenuItem &&
+      attributes.quantity
+    ) {
+      restaurantId =
+        attributes.selectedRestaurant.id;
+
+      restaurantName =
+        attributes.selectedRestaurant.name;
+
+      expectedTotal =
+        attributes.pendingTotal;
+
+      items = [
+        {
+          menuItemId:
+            attributes.selectedMenuItem.id,
+          quantity:
+            attributes.quantity
+        }
+      ];
+    }
+
+    /*
+     * Nenhum pedido válido foi encontrado
+     * nos atributos da sessão.
+     */
+    else {
+      return handlerInput.responseBuilder
+        .speak(
+          'Não encontrei os dados do pedido aguardando confirmação. Tente fazer o pedido novamente.'
+        )
+        .reprompt('Diga: buscar pizzarias.')
+        .getResponse();
+    }
+
     try {
       const order = await createOrder({
-        restaurantId:
-          attributes.selectedRestaurant.id,
-        menuItemId:
-          attributes.selectedMenuItem.id,
-        quantity: attributes.quantity
+        restaurantId,
+        items
       });
 
       console.log(
@@ -831,13 +1007,23 @@ const YesIntentHandler = {
         order?.reference || order?.id;
 
       const total =
-        order?.total ?? attributes.pendingTotal;
+        order?.total ?? expectedTotal;
 
-      attributes.conversationState = 'completed';
+      attributes.conversationState =
+        'completed';
+
       attributes.createdOrder = {
         id: order?.id || null,
         reference: order?.reference || null
       };
+
+      /*
+       * Remove os dados temporários do pedido.
+       */
+      delete attributes.pendingOrder;
+      delete attributes.selectedMenuItem;
+      delete attributes.quantity;
+      delete attributes.pendingTotal;
 
       handlerInput.attributesManager.setSessionAttributes(
         attributes
@@ -851,7 +1037,7 @@ const YesIntentHandler = {
 
       return handlerInput.responseBuilder
         .speak(
-          `Pedido criado com sucesso na ${attributes.selectedRestaurant.name}. O total é ${formatPriceForSpeech(total)}.${referenceText}`
+          `Pedido criado com sucesso na ${restaurantName}. O total é ${formatPriceForSpeech(total)}.${referenceText}`
         )
         .getResponse();
     } catch (error) {
@@ -890,6 +1076,7 @@ const NoIntentHandler = {
       attributes.conversationState ===
       'awaiting_confirmation'
     ) {
+      delete attributes.pendingOrder;
       delete attributes.selectedMenuItem;
       delete attributes.quantity;
       delete attributes.pendingTotal;
@@ -902,10 +1089,7 @@ const NoIntentHandler = {
 
       return handlerInput.responseBuilder
         .speak(
-          'Tudo bem, o pedido não foi confirmado. Qual outro item você deseja?'
-        )
-        .reprompt(
-          'Você pode dizer pizza de calabresa, pizza de quatro queijos ou refrigerante.'
+          'Tudo bem, o pedido não foi confirmado.'
         )
         .getResponse();
     }
@@ -1067,6 +1251,7 @@ const ErrorHandler = {
 exports.handler = Alexa.SkillBuilders.custom()
   .addRequestHandlers(
     LaunchRequestHandler,
+    PedidoCompletoIntentHandler,
     BuscarPizzariasIntentHandler,
     SelecionarRestauranteIntentHandler,
     SelecionarItemIntentHandler,
