@@ -383,18 +383,18 @@ def parse_item_segment(segment, menu_items):
         len(candidates) > 1
         and not segment_specific_words
     ):
-        return None, {
-            "status": "ambiguous_item",
-            "message": (
-                f"Não identifiquei qual {family or 'item'} "
-                "você deseja."
-            ),
-            "options": [
-                candidate.name
-                for candidate in candidates[:5]
-            ],
-        }
-        
+            return None, {
+                "status": "ambiguous_item",
+                "message": (
+                    f"Não identifiquei qual {family or 'item'} "
+                    "você deseja."
+                ),
+                "options": [
+                    candidate.name
+                    for candidate in candidates[:5]
+                ],
+            }
+
     if (
         len(candidates) == 1
         and not segment_specific_words
@@ -405,15 +405,14 @@ def parse_item_segment(segment, menu_items):
                 "message": (
                     "A quantidade deve estar entre "
                     "uma e vinte unidades."
-            ),
-        }
+                ),
+            }
 
-    return {
-        "menu_item": candidates[0],
-        "quantity": quantity,
-    }, None
-        
-    
+        return {
+            "menu_item": candidates[0],
+            "quantity": quantity,
+        }, None
+
     scored_items = [
         (
             calculate_item_score(

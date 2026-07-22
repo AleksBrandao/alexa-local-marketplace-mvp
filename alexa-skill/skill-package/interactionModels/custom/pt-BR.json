@@ -53,12 +53,9 @@
             }
           ],
           "samples": [
-            "{restaurante}",
-            "quero a {restaurante}",
             "escolho a {restaurante}",
-            "selecionar {restaurante}",
+            "selecionar restaurante {restaurante}",
             "vou de {restaurante}",
-            "quero pedir na {restaurante}",
             "mostrar o cardápio da {restaurante}"
           ]
         },
@@ -71,10 +68,9 @@
             }
           ],
           "samples": [
-            "{item}",
-            "escolho {item}",
-            "adicionar {item}",
-            "selecionar {item}",
+            "escolho o item {item}",
+            "adicionar o item {item}",
+            "selecionar o item {item}",
             "pedir o item {item}"
           ]
         },
@@ -106,8 +102,12 @@
           ],
           "samples": [
             "quero pedir {pedido}",
+            "eu quero pedir {pedido}",
+            "quero fazer um pedido de {pedido}",
+            "gostaria de pedir {pedido}",
             "faça um pedido de {pedido}",
             "meu pedido é {pedido}",
+            "pode anotar {pedido}",
             "anote {pedido}",
             "desejo {pedido}",
             "vou pedir {pedido}"

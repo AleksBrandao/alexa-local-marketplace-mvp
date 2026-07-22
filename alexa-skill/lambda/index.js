@@ -416,6 +416,20 @@ const PedidoCompletoIntentHandler = {
       const pedidoText =
         pedidoSlot.raw || pedidoSlot.name;
 
+        console.log(
+          'Texto bruto recebido no PedidoCompletoIntent:',
+          JSON.stringify(pedidoText)
+        );
+        
+        console.log(
+          'Intent completo recebido:',
+          JSON.stringify(
+            handlerInput.requestEnvelope.request.intent,
+            null,
+            2
+          )
+        );
+
       if (!pedidoText) {
         return handlerInput.responseBuilder
           .speak(
@@ -433,6 +447,11 @@ const PedidoCompletoIntentHandler = {
         restaurantId:
           attributes.selectedRestaurant?.id || null
       });
+
+      console.log(
+        'Resultado retornado pelo parser:',
+        JSON.stringify(parsedOrder, null, 2)
+      );
 
       if (parsedOrder.status !== 'ready') {
         const message =
