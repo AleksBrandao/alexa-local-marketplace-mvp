@@ -249,18 +249,32 @@ def extract_quantity(segment):
     return quantity, remaining_text
 
 
-def remove_restaurant_suffix(text):
+def remove_restaurant_suffix(text, restaurant_name):
     normalized = normalize_aliases(text)
 
+    restaurant_normalized = normalize_aliases(
+        restaurant_name
+    )
+
+    restaurant_pattern = re.escape(
+        restaurant_normalized
+    )
+
     patterns = [
-        r"\s+da\s+pizzaria\s+.*$",
-        r"\s+do\s+restaurante\s+.*$",
-        r"\s+na\s+pizzaria\s+.*$",
-        r"\s+no\s+restaurante\s+.*$",
+        (
+            rf"\s+(?:da|do|na|no)\s+"
+            rf"(?:pizzaria\s+|restaurante\s+)?"
+            rf"{restaurant_pattern}\s*$"
+        ),
+        rf"\s+{restaurant_pattern}\s*$",
     ]
 
     for pattern in patterns:
-        normalized = re.sub(pattern, "", normalized)
+        normalized = re.sub(
+            pattern,
+            "",
+            normalized,
+        )
 
     return normalized.strip()
 
@@ -380,7 +394,26 @@ def parse_item_segment(segment, menu_items):
                 for candidate in candidates[:5]
             ],
         }
+        
+    if (
+        len(candidates) == 1
+        and not segment_specific_words
+    ):
+        if quantity < 1 or quantity > 20:
+            return None, {
+                "status": "invalid_quantity",
+                "message": (
+                    "A quantidade deve estar entre "
+                    "uma e vinte unidades."
+            ),
+        }
 
+    return {
+        "menu_item": candidates[0],
+        "quantity": quantity,
+    }, None
+        
+    
     scored_items = [
         (
             calculate_item_score(
@@ -487,7 +520,8 @@ def parse_order_text(text, restaurant_id=None):
         }
 
     normalized_order = remove_restaurant_suffix(
-        raw_text
+       raw_text,
+        restaurant.name,
     )
 
     normalized_order = re.sub(
