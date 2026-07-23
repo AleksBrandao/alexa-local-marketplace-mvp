@@ -5,9 +5,31 @@ from .models import MerchantLead, MenuItem, Order, OrderItem, Restaurant
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
+    def validate_restaurant(self, restaurant):
+        request = self.context.get('request')
+
+        if (
+            request
+            and request.user.is_authenticated
+            and restaurant.owner_id != request.user.id
+        ):
+            raise serializers.ValidationError(
+                'Você não pode alterar o cardápio '
+                'de outro estabelecimento.'
+            )
+
+        return restaurant
+
     class Meta:
         model = MenuItem
-        fields = ['id', 'restaurant', 'name', 'description', 'price', 'active']
+        fields = [
+            'id',
+            'restaurant',
+            'name',
+            'description',
+            'price',
+            'active',
+        ]
 
 
 class RestaurantSerializer(serializers.ModelSerializer):
@@ -57,7 +79,19 @@ class OrderSerializer(serializers.ModelSerializer):
             'customer_phone', 'delivery_address', 'total', 'status', 'source',
             'created_at', 'updated_at', 'items',
         ]
-        read_only_fields = ['reference', 'total', 'created_at', 'updated_at']
+        read_only_fields = [
+    'reference',
+    'restaurant',
+    'restaurant_name',
+    'customer_name',
+    'customer_phone',
+    'delivery_address',
+    'total',
+    'source',
+    'created_at',
+    'updated_at',
+    'items',
+]
 
 
 class OrderItemInputSerializer(serializers.Serializer):

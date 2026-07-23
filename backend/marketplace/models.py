@@ -1,9 +1,23 @@
 import uuid
+from django.conf import settings
 from django.db import models
 
 
+
 class Restaurant(models.Model):
+    
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='restaurants',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=160)
+    category = models.CharField(
+        max_length=80,
+        default='pizzaria',
+    )
     category = models.CharField(max_length=80, default='pizzaria')
     city = models.CharField(max_length=100, default='Jundiaí')
     neighborhood = models.CharField(max_length=100, blank=True)
